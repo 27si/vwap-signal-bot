@@ -81,12 +81,21 @@ def run_crypto_bot():
       & (df['Volume'] > df['Avg_Volume'])
   )
 
-  # Check Latest Closed Candle (Using -2 to avoid incomplete live candle mismatch)
+  # Check Latest Closed Candle
   i = len(df) - 2
   latest_row = df.iloc[i]
   latest_time = df.index[i]
   current_price = latest_row['Close']
   current_atr = latest_row['ATR']
+
+  # Convert time to IST (+5:30)
+  if latest_time.tzinfo is not None:
+    ist_time = latest_time.tz_convert('Asia/Kolkata')
+  else:
+    # Agar timezone nahi hai toh UTC maan kar convert karenge
+    ist_time = latest_time.tz_localize('UTC').tz_convert('Asia/Kolkata')
+
+  formatted_time = ist_time.strftime('%Y-%m-%d %I:%M:%S %p IST')
 
   signal_found = False
   message_text = ''
@@ -96,7 +105,7 @@ def run_crypto_bot():
     entry_price = current_price
     stop_loss = entry_price - (1.5 * current_atr)
     risk = entry_price - stop_loss
-    take_profit = entry_price + (risk * 2.5)  # 1:2.5 Risk-Reward
+    take_profit = entry_price + (risk * 2.5)
 
     message_text = (
         f'🚨 *LONG SIGNAL & RISK MGMT* 🚨\n'
@@ -107,7 +116,7 @@ def run_crypto_bot():
         f'🛑 *Stop Loss:* `{stop_loss:.2f}`\n'
         f'🎯 *Take Profit:* `{take_profit:.2f}`\n'
         f'⚖️ *Risk/Reward:* 1:2.5\n'
-        f'⏰ *Time:* {latest_time}\n'
+        f'⏰ *Time:* {formatted_time}\n'
         f'━━━━━━━━━━━━━━━━━━━'
     )
   elif latest_row['Short_Cond']:
@@ -115,7 +124,7 @@ def run_crypto_bot():
     entry_price = current_price
     stop_loss = entry_price + (1.5 * current_atr)
     risk = stop_loss - entry_price
-    take_profit = entry_price - (risk * 2.5)  # 1:2.5 Risk-Reward
+    take_profit = entry_price - (risk * 2.5)
 
     message_text = (
         f'🚨 *SHORT SIGNAL & RISK MGMT* 🚨\n'
@@ -126,22 +135,22 @@ def run_crypto_bot():
         f'🛑 *Stop Loss:* `{stop_loss:.2f}`\n'
         f'🎯 *Take Profit:* `{take_profit:.2f}`\n'
         f'⚖️ *Risk/Reward:* 1:2.5\n'
-        f'⏰ *Time:* {latest_time}\n'
+        f'⏰ *Time:* {formatted_time}\n'
         f'━━━━━━━━━━━━━━━━━━━'
     )
   else:
     print(
-        f'Current Time {latest_time} par koi naya signal nahi hai. Current'
+        f'Current Time {formatted_time} par koi naya signal nahi hai. Current'
         f' Price: {current_price:.2f}'
     )
 
   if signal_found:
     send_telegram_message(message_text)
-    print('Signal mil gaya aur Risk Management ke sath Telegram par bhej diya!')
+    print('Signal mil gaya aur IST time ke sath Telegram par bhej diya!')
   else:
     print('Koi signal nahi mila.')
 
 
 if __name__ == '__main__':
   run_crypto_bot()
-  
+    
