@@ -64,7 +64,7 @@ def run_crypto_bot():
   )
   df = df.dropna()
 
-  # Conditions
+  # Conditions for VWAP Strategy
   df['Long_Cond'] = (
       (df['Close'] > df['VWAP'])
       & (df['Close'] > df['EMA_8'])
@@ -92,7 +92,6 @@ def run_crypto_bot():
   if latest_time.tzinfo is not None:
     ist_time = latest_time.tz_convert('Asia/Kolkata')
   else:
-    # Agar timezone nahi hai toh UTC maan kar convert karenge
     ist_time = latest_time.tz_localize('UTC').tz_convert('Asia/Kolkata')
 
   formatted_time = ist_time.strftime('%Y-%m-%d %I:%M:%S %p IST')
@@ -108,7 +107,7 @@ def run_crypto_bot():
     take_profit = entry_price + (risk * 2.5)
 
     message_text = (
-        f'🚨 *LONG SIGNAL & RISK MGMT* 🚨\n'
+        f'🚨 *VWAP 5M LONG SIGNAL & RISK MGMT* 🚨\n'
         f'━━━━━━━━━━━━━━━━━━━\n'
         f'📌 *Symbol:* {SYMBOL}\n'
         f'🟢 *Direction:* **BUY / LONG**\n'
@@ -127,7 +126,7 @@ def run_crypto_bot():
     take_profit = entry_price - (risk * 2.5)
 
     message_text = (
-        f'🚨 *SHORT SIGNAL & RISK MGMT* 🚨\n'
+        f'🚨 *VWAP 5M SHORT SIGNAL & RISK MGMT* 🚨\n'
         f'━━━━━━━━━━━━━━━━━━━\n'
         f'📌 *Symbol:* {SYMBOL}\n'
         f'🔴 *Direction:* **SELL / SHORT**\n'
@@ -140,17 +139,18 @@ def run_crypto_bot():
     )
   else:
     print(
-        f'Current Time {formatted_time} par koi naya signal nahi hai. Current'
-        f' Price: {current_price:.2f}'
+        f'Current Time {formatted_time} par koi signal nahi hai. Current Price:'
+        f' {current_price:.2f}'
     )
 
   if signal_found:
     send_telegram_message(message_text)
-    print('Signal mil gaya aur IST time ke sath Telegram par bhej diya!')
+    print('VWAP 5m signal bhej diya Telegram par!')
   else:
     print('Koi signal nahi mila.')
 
 
 if __name__ == '__main__':
   run_crypto_bot()
+    
     
